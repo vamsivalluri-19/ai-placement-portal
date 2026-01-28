@@ -3,23 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <title>Redirecting...</title>
+  <base href="/ai-placement-portal/">
+</head>
+
 </head>
 <body>
 <script>
-  // If user is logged in, go to role dashboard
+  // Get user role from localStorage
   const role = localStorage.getItem("userRole");
 
-  const rolePaths = {
-    student: "/dashboards/student.html",
-    staff: "/dashboards/staff.html",
-    hr: "/dashboards/hr.html",
-    admin: "/dashboards/admin.html",
-  };
+  // ✅ IMPORTANT: NO leading slash
+ const rolePaths = {
+  student: "dashboards/student.html",
+  staff: "dashboards/staff.html",
+  hr: "dashboards/hr.html",
+  admin: "dashboards/admin.html",
+};
+
 
   if (role && rolePaths[role]) {
     window.location.href = rolePaths[role];
   } else {
-    window.location.href = "/";
+    // fallback to home page
+    window.location.href = "index.html";
   }
 </script>
 </body>
