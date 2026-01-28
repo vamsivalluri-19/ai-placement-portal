@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Dashboard - AI Placement Portal</title>
+  <script>
+    if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('userRole') !== 'staff') {
+      window.location.href = './index.html';
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: #f1f5f9; 
+      display: flex; 
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* SIDEBAR */
+    .sidebar { 
+      width: 280px; 
+      background: linear-gradient(180deg, #020617, #111827); 
+      color: white; 
+      padding: 20px 15px; 
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .sidebar h2 { 
+      text-align: center; 
+      margin-bottom: 25px; 
+      font-size: 16px;
+      color: #3b82f6;
+      font-weight: 700;
+    }
+    .sidebar a { 
+      display: block; 
+      padding: 12px 16px; 
+      margin-bottom: 8px; 
+      border-radius: 8px; 
+      color: #cbd5f5; 
+      text-decoration: none; 
+      cursor: pointer; 
+      font-size: 14px; 
+      transition: all 0.3s ease;
+      border-left: 3px solid transparent;
+    }
+    .sidebar a:hover { 
+      background: rgba(59, 130, 246, 0.2);
+      border-left-color: #3b82f6;
+      transform: translateX(5px);
+    }
+    .sidebar a.active { 
+      background: #3b82f6; 
+      color: #fff;
+      border-left-color: #60a5fa;
+      transform: translateX(5px);
+      font-weight: 600;
+    }
+    
+    /* MAIN LAYOUT */
+    .main { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    /* NAV BAR */
+    nav { 
+      background: linear-gradient(90deg, #020617, #111827);
+      color: white; 
+      padding: 14px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    nav h3 { font-size: 18px; font-weight: 600; margin: 0; }
+    nav span { font-size: 12px; color: #cbd5f5; }
+    
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .user-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background: #3b82f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      border: 2px solid white;
+    }
+    
+    nav button { 
+      padding: 8px 16px; 
+      border-radius: 6px; 
+      border: none; 
+      cursor: pointer; 
+      background: #ef4444; 
+      color: white; 
+      font-weight: 500; 
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+    nav button:hover { 
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    }
+    nav .profile-btn {
+      background: #3b82f6;
+    }
+    nav .profile-btn:hover {
+      background: #2563eb;
+    }
+    
+    /* CONTENT AREA */
+    .content { 
+      padding: 20px; 
+      overflow-y: auto; 
+      flex: 1;
+      background: #f1f5f9;
+    }
+    
+    .section { 
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .section.active { 
+      display: block;
+    }
+    
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* CARDS */
+    .card { 
+      background: white; 
+      padding: 24px; 
+      border-radius: 14px; 
+      margin-bottom: 20px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid #e5e7eb;
+    }
+    .card h3 { 
+      margin-bottom: 16px; 
+      color: #1e293b; 
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .card h4 { 
+      color: #334155;
+      font-size: 16px;
+      margin-bottom: 12px;
+      margin-top: 16px;
+    }
+    
+    /* TABLES */
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      font-size: 13px;
+    }
+    th, td { 
+      padding: 12px 10px; 
+      border: 1px solid #e5e7eb; 
+      text-align: left;
+    }
+    th { 
+      background: #f3f4f6; 
+      font-weight: 600; 
+      color: #374151;
+      text-align: center;
+    }
+    tr:nth-child(even) { background: #f9fafb; }
+    tr:hover { background: #f3f4f6; }
+    
+    /* BADGES */
+    .badge { 
+      display: inline-block;
+      padding: 5px 12px; 
+      border-radius: 20px; 
+      font-size: 11px; 
+      color: white; 
+      font-weight: 600;
+      text-align: center;
+    }
+    .badge.success { background: #10b981; }
+    .badge.warning { background: #f59e0b; color: #333; }
+    .badge.danger { background: #ef4444; }
+    .badge.info { background: #3b82f6; }
+    .badge.pending { background: #8b5cf6; }
+    
+    /* STATS GRID */
+    .stats-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+      gap: 16px; 
+      margin-bottom: 20px;
+    }
+    .stat-card { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+      color: white; 
+      padding: 20px; 
+      border-radius: 12px; 
+      text-align: center; 
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      transition: transform 0.3s;
+    }
+    .stat-card:hover { transform: translateY(-5px); }
+    .stat-card h4 { 
+      font-size: 32px; 
+      margin: 0 0 8px 0; 
+      font-weight: 700;
+      color: white;
+    }
+    .stat-card p { 
+      font-size: 13px; 
+      opacity: 0.9;
+      margin: 0;
+    }
+    
+    /* SEARCH & FILTER */
+    .search-filter { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .search-filter input, .search-filter select { 
+      padding: 8px 12px; 
+      border: 1px solid #d1d5db; 
+      border-radius: 6px; 
+      font-size: 13px;
+      background: white;
+    }
+    .search-filter input:focus, .search-filter select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .search-filter button { 
+      padding: 8px 16px; 
+      background: #3b82f6; 
+      color: white; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: 500; 
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+    .search-filter button:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+    
+    /* BUTTONS */
+    .btn-small { 
+      padding: 4px 10px; 
+      border-radius: 4px; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 11px; 
+      margin: 2px; 
+      font-weight: 500; 
+      transition: all 0.2s;
+      color: white;
+    }
+    .btn-edit { background: #3b82f6; }
+    .btn-delete { background: #ef4444; }
+    .btn-view { background: #10b981; }
+    .btn-download { background: #3b82f6; padding: 6px 14px; font-size: 12px; }
+    .btn-small:hover { transform: scale(1.08); opacity: 0.9; }
+    
+    /* MODALS */
+    .modal { 
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; 
+      top: 0; 
+      width: 100%; 
+      height: 100%; 
+      background: rgba(0,0,0,0.6);
+      animation: fadeIn 0.3s;
+    }
+    .modal-content { 
+      background: white; 
+      margin: 5% auto; 
+      padding: 30px; 
+      border-radius: 14px; 
+      width: 90%; 
+      max-width: 700px; 
+      max-height: 85vh; 
+      overflow-y: auto; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-header h3 { margin: 0; }
+    .close { 
+      font-size: 28px; 
+      font-weight: bold; 
+      cursor: pointer;
+      color: #6b7280;
+      background: none;
+      border: none;
+      transition: color 0.2s;
+    }
+    .close:hover { color: #000; }
+    
+    /* NOTIFICATIONS */
+    .notification { 
+      position: fixed; 
+      top: 20px; 
+      right: 20px; 
+      padding: 15px 20px; 
+      background: #10b981; 
+      color: white; 
+      border-radius: 8px; 
+      z-index: 1001; 
+      display: none; 
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      animation: slideIn 0.3s;
+      max-width: 400px;
+    }
+    .notification.error { background: #ef4444; }
+    .notification.warning { background: #f59e0b; }
+    .notification.success { background: #10b981; }
+    
+    @keyframes slideIn { 
+      from { transform: translateX(400px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    /* FORMS */
+    .form-group { 
+      margin-bottom: 18px;
+    }
+    .form-group label { 
+      display: block; 
+      margin-bottom: 6px; 
+      font-weight: 600; 
+      color: #1e293b;
+      font-size: 13px;
+    }
+    .form-group input, .form-group select, .form-group textarea { 
+      width: 100%; 
+      padding: 10px 12px; 
+      border: 1px solid #d1d5db; 
+      border-radius: 6px; 
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .form-group textarea { 
+      resize: vertical;
+      min-height: 80px;
+    }
+    
+    /* PROFILE SECTION */
+    .profile-container {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 30px;
+    }
+    
+    @media(max-width: 900px) {
+      .profile-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .profile-image-section{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .profile-img {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #3b82f6;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      margin-bottom: 15px;
+    }
+    
+    .upload-btn-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .upload-btn-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
+    }
+    
+    .upload-label {
+      display: block;
+      padding: 10px 20px;
+      background: #3b82f6;
+      color: white;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 13px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    .upload-label:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+    
+    .profile-info-section {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      padding: 20px;
+    }
+    
+    .profile-info-section h4 {
+      color: #1e293b;
+      font-size: 16px;
+      margin-bottom: 15px;
+      font-weight: 700;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 10px;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-label {
+      font-weight: 600;
+      color: #374151;
+      min-width: 120px;
+    }
+    
+    .info-value {
+      color: #6b7280;
+      word-break: break-word;
+    }
+    
+    .two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    @media(max-width: 900px) {
+      .two-columns {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 15px 0;
+    }
+    
+    .summary-chip {
+      background: #e5e7eb;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #374151;
+    }
+    
+    .small-text {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+
+    .report-details {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border-left: 4px solid #3b82f6;
+    }
+
+    .report-details h5 {
+      margin-bottom: 10px;
+      color: #1e293b;
+    }
+
+    .report-details ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .report-details li {
+      padding: 5px 0;
+      color: #6b7280;
+      font-size: 12px;
+    }
+    
+    .spinner {
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <!-- NOTIFICATION -->
+  <div id="notification" class="notification"></div>
+  
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>📊 Staff Portal</h2>
+    <a class="active" onclick="openSection('students', this)">👥 Students</a>
+    <a onclick="openSection('profile', this)">👤 Profile</a>
+    <a onclick="openSection('attendance', this)">📋 Attendance</a>
+    <a onclick="openSection('results', this)">📈 Results</a>
+    <a onclick="openSection('placements', this)">💼 Placements</a>
+    <a onclick="openSection('companies', this)">🏢 Companies</a>
+    <a onclick="openSection('interviews', this)">🎤 Interviews</a>
+    <a onclick="openSection('schedule', this)">📅 Schedule</a>
+    <a onclick="openSection('reports', this)">📊 Reports</a>
+    <a onclick="openSection('skills', this)">⚡ Skills</a>
+  </div>
+  
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- NAVBAR -->
+    <nav>
+      <div>
+        <h3>📘 AI Placement Portal - Staff Dashboard</h3>
+        <span id="lastLogin">Last login: Jan 28, 2026 05:49 PM IST</span>
+      </div>
+      <div class="nav-actions">
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatarNav">F</div>
+          <div>
+            <div style="font-size: 13px; font-weight: 600;" id="facultyNameNav">Faculty Name</div>
+            <div style="font-size: 11px; color: #cbd5f5;" id="facultyDeptNav">Department</div>
+          </div>
+        </div>
+        <button class="profile-btn" onclick="openSection('profile', document.querySelector('.sidebar a:nth-child(2)'))">⚙️ Profile</button>
+        <button onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </nav>
+    
+    <!-- CONTENT AREA -->
+    <div class="content">
+      
+      <!-- STUDENTS SECTION -->
+      <div id="students" class="section active">
+        <div class="card">
+          <h3>👥 Student Management - Comprehensive Directory</h3>
+          <p class="small-text">View, filter, and manage 245 students across all departments with eligibility tracking, placement status, and AI risk assessment.</p>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h4>245</h4>
+              <p>Total Students</p>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <h4>198</h4>
+              <p>Eligible</p>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <h4>42</h4>
+              <p>Placed</p>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+              <h4>15</h4>
+              <p>At Risk</p>
+            </div>
+          </div>
+          
+          <div class="search-filter">
+            <input type="text" id="studentSearch" placeholder="Search by name, roll, email..." onkeyup="filterStudents()">
+            <select id="deptFilter" onchange="filterStudents()">
+              <option value="">All Departments</option>
+              <option value="CSE">CSE (120)</option>
+              <option value="IT">IT (85)</option>
+              <option value="ECE">ECE (25)</option>
+              <option value="MECH">MECH (15)</option>
+            </select>
+            <select id="yearFilter" onchange="filterStudents()">
+              <option value="">All Years</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+            <select id="statusFilter" onchange="filterStudents()">
+              <option value="">All Status</option>
+              <option value="Eligible">Eligible</option>
+              <option value="Warning">Warning</option>
+              <option value="Risk">At Risk</option>
+            </select>
+            <button onclick="openAddStudentModal()">+ Add Student</button>
+            <button onclick="exportStudents()">📥 Export CSV</button>
+          </div>
+          
+          <div style="max-height:500px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:8px;">
+            <table id="studentTable">
+              <thead>
+                <tr>
+                  <th>Roll</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Dept</th>
+                  <th>Yr</th>
+                  <th>CGPA</th>
+                  <th>Att %</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>CS21B001</td><td>Vamsi Valluri</td><td>vamsi@college.edu</td><td>9876543210</td><td>CSE</td><td>4</td><td>8.75</td><td>88</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B002</td><td>Ravi Kumar</td><td>ravi@college.edu</td><td>9123456789</td><td>CSE</td><td>4</td><td>8.92</td><td>94</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B003</td><td>Anil Reddy</td><td>anil@college.edu</td><td>9234567890</td><td>CSE</td><td>4</td><td>9.12</td><td>96</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B004</td><td>Neha Singh</td><td>neha@college.edu</td><td>9345678901</td><td>CSE</td><td>4</td><td>8.45</td><td>82</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B005</td><td>Arjun Patel</td><td>arjun@college.edu</td><td>9456789012</td><td>CSE</td><td>4</td><td>7.65</td><td>76</td><td><span class="badge warning">Warning</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B006</td><td>Deepak Verma</td><td>deepak@college.edu</td><td>9567890123</td><td>CSE</td><td>4</td><td>8.88</td><td>91</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B007</td><td>Sakshi Gupta</td><td>sakshi@college.edu</td><td>9678901234</td><td>CSE</td><td>4</td><td>9.05</td><td>93</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>CS21B008</td><td>Rohit Sharma</td><td>rohit@college.edu</td><td>9789012345</td><td>CSE</td><td>4</td><td>7.35</td><td>68</td><td><span class="badge danger">At Risk</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>IT21B009</td><td>Priya Desai</td><td>priya@college.edu</td><td>9890123456</td><td>IT</td><td>3</td><td>8.60</td><td>87</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+                <tr><td>IT21B010</td><td>Vishal Nair</td><td>vishal@college.edu</td><td>9901234567</td><td>IT</td><td>3</td><td>8.78</td><td>89</td><td><span class="badge success">Eligible</span></td><td><button class="btn-small btn-view">View</button><button class="btn-small btn-edit">Edit</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- PROFILE SECTION -->
+      <div id="profile" class="section">
+        <div class="card">
+          <h3>👤 Faculty Profile & Settings</h3>
+          <div class="profile-container">
+            <!-- LEFT: Profile Image -->
+            <div class="profile-image-section">
+              <img id="profileImg" src="https://via.placeholder.com/180?text=Faculty" alt="Profile" class="profile-img">
+              
+              <div class="upload-btn-wrapper">
+                <label for="imgUpload" class="upload-label">📸 Upload Photo</label>
+                <input type="file" id="imgUpload" accept="image/*" onchange="previewImage(event)">
+              </div>
+              
+              <button onclick="saveProfileImage()" style="width:100%;padding:10px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;margin-top:10px;">✓ Save Photo</button>
+              
+              <div style="width:100%;margin-top:20px;padding:15px;background:#e0f2fe;border-radius:8px;border-left:4px solid #0284c7;font-size:12px;color:#0c4a6e;">
+                <strong>💡 Tips:</strong>
+                <ul style="margin:8px 0 0 0;padding-left:20px;">
+                  <li>Use professional photo</li>
+                  <li>JPG or PNG format</li>
+                  <li>Max 5MB size</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- RIGHT: Profile Details -->
+            <div>
+              <div class="profile-info-section">
+                <h4>📋 Current Information</h4>
+                <div class="info-row">
+                  <span class="info-label">Name:</span>
+                  <span class="info-value" id="displayName">Faculty Name</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email:</span>
+                  <span class="info-value" id="displayEmail">faculty@college.edu</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Phone:</span>
+                  <span class="info-value" id="displayPhone">91-9876543210</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Designation:</span>
+                  <span class="info-value" id="displayDesignation">Assistant Professor</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Department:</span>
+                  <span class="info-value" id="displayDept">CSE</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Emp ID:</span>
+                  <span class="info-value" id="displayEmpID">CSE-2018-042</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Joined:</span>
+                  <span class="info-value" id="displayJoined">January 2018</span>
+                </div>
+              </div>
+              
+              <div class="profile-info-section" style="margin-top:20px;">
+                <h4>⚡ Department Statistics</h4>
+                <div class="info-row">
+                  <span class="info-label">Students:</span>
+                  <span class="info-value" style="color:#10b981;font-weight:600;">120</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Placed:</span>
+                  <span class="info-value" style="color:#3b82f6;font-weight:600;">28 (23%)</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">In Progress:</span>
+                  <span class="info-value" style="color:#f59e0b;font-weight:600;">67</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Avg Package:</span>
+                  <span class="info-value" style="color:#8b5cf6;font-weight:600;">12.5 LPA</span>
+                </div>
+              </div>
+              
+              <button onclick="toggleEditProfile()" style="width:100%;margin-top:20px;padding:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">✏️ Edit Profile Details</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Edit Profile Form -->
+        <div class="card" id="editProfileSection" style="display:none;">
+          <h3>✏️ Edit Profile Details</h3>
+          <form id="profileUpdateForm" onsubmit="saveProfileChanges(event)">
+            <div class="two-columns">
+              <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="editName" required>
+              </div>
+              <div class="form-group">
+                <label>Email *</label>
+                <input type="email" id="editEmail" required>
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="editPhone" placeholder="+91-XXXXXXXXXX">
+              </div>
+              <div class="form-group">
+                <label>Designation</label>
+                <input type="text" id="editDesignation">
+              </div>
+              <div class="form-group">
+                <label>Department</label>
+                <input type="text" id="editDept">
+              </div>
+              <div class="form-group">
+                <label>Employee ID</label>
+                <input type="text" id="editEmpID">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Professional Bio</label>
+              <textarea id="editBio" placeholder="Share your expertise, achievements, and specializations..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>Qualifications</label>
+              <input type="text" id="editQualifications" placeholder="e.g., B.Tech CSE, M.Tech, Ph.D">
+            </div>
+            
+            <div class="form-group">
+              <label>Office Location</label>
+              <input type="text" id="editOfficeLocation" placeholder="e.g., Block A, Room 206">
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+              <button type="submit" style="flex:1;padding:12px;background:#10b981;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">💾 Save Changes</button>
+              <button type="button" onclick="toggleEditProfile()" style="flex:1;padding:12px;background:#6b7280;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px;">✕ Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- ATTENDANCE SECTION -->
+      <div id="attendance" class="section">
+        <div class="card">
+          <h3>📋 Attendance Management - Real-time Tracking</h3>
+          <p class="small-text">Monitor student attendance by subject with AI predictions, trends, and automated alerts for low attendance.</p>
+          
+          <div class="summary-row">
+            <span class="summary-chip">📊 Average: 86.2%</span>
+            <span class="summary-chip">⚠️ Low Attendance: 18 students</span>
+            <span class="summary-chip">✅ Present Today: 228/245</span>
+            <span class="summary-chip">🤖 AI Prediction: 87.1%</span>
+          </div>
+          
+          <div class="search-filter">
+            <input type="date" id="dateFilter" value="2026-01-28">
+            <select id="subjectFilter" onchange="filterAttendance()">
+              <option value="">All Subjects</option>
+              <option value="DSA">Data Structures (Mon-Wed)</option>
+              <option value="AIML">AI/ML (Tue-Thu)</option>
+              <option value="DBMS">DBMS (Mon-Fri)</option>
+              <option value="WT">Web Tech (Wed)</option>
+            </select>
+            <button onclick="markBulkAttendance()">📝 Mark Attendance</button>
+            <button onclick="generateAttendanceReport()">📊 Generate Report</button>
+          </div>
+          
+          <div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:8px;">
+            <table id="attendanceTable" style="font-size:12px;">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Roll</th>
+                  <th>DSA</th>
+                  <th>AIML</th>
+                  <th>DBMS</th>
+                  <th>WT</th>
+                  <th>OS</th>
+                  <th>Cloud</th>
+                  <th>Overall</th>
+                  <th>Trend</th>
+                  <th>Alert</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Vamsi Valluri</td><td>CS21B001</td><td><span class="badge success">P</span></td><td><span class="badge warning">L</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td>88%</td><td>↑ 3%</td><td>None</td></tr>
+                <tr><td>Ravi Kumar</td><td>CS21B002</td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge warning">L</span></td><td>94%</td><td>↑ 2%</td><td>None</td></tr>
+                <tr><td>Anil Reddy</td><td>CS21B003</td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td><span class="badge success">P</span></td><td>96%</td><td>↑ 1%</td><td>None</td></tr>
+                <tr><td>Arjun Patel</td><td>CS21B005</td><td><span class="badge danger">A</span></td><td><span class="badge success">P</span></td><td><span class="badge warning">L</span></td><td><span class="badge success">P</span></td><td><span class="badge danger">A</span></td><td><span class="badge warning">L</span></td><td>62%</td><td>↓ 5%</td><td><span class="badge danger">Critical</span></td></tr>
+                <tr><td>Rohit Sharma</td><td>CS21B008</td><td><span class="badge warning">L</span></td><td><span class="badge danger">A</span></td><td><span class="badge success">P</span></td><td><span class="badge danger">A</span></td><td><span class="badge warning">L</span></td><td><span class="badge danger">A</span></td><td>58%</td><td>↓ 8%</td><td><span class="badge danger">Alert</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- RESULTS SECTION -->
+      <div id="results" class="section">
+        <div class="card">
+          <h3>📈 Results & Grades Management</h3>
+          
+          <div class="search-filter">
+            <select id="semFilter" onchange="loadSemesterResults()">
+              <option value="7">Semester 7 (Current - 2025-26)</option>
+              <option value="6">Semester 6 (2024-25)</option>
+              <option value="5">Semester 5 (2024-25)</option>
+            </select>
+            <button onclick="uploadResults()">📤 Upload Results</button>
+          </div>
+          
+          <div class="two-columns">
+            <div>
+              <h4>Class Performance - CSE 4th Year</h4>
+              <table>
+                <thead>
+                  <tr><th>Name</th><th>DSA</th><th>AI</th><th>Cloud</th><th>SGPA</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Vamsi Valluri</td><td>92</td><td>88</td><td>90</td><td>9.1</td></tr>
+                  <tr><td>Ravi Kumar</td><td>94</td><td>92</td><td>94</td><td>9.4</td></tr>
+                  <tr><td>Anil Reddy</td><td>96</td><td>89</td><td>92</td><td>9.2</td></tr>
+                  <tr><td>Neha Singh</td><td>88</td><td>85</td><td>87</td><td>8.8</td></tr>
+                  <tr><td>Arjun Patel</td><td>76</td><td>72</td><td>78</td><td>7.6</td></tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div>
+              <h4>⚠️ Critical Alerts</h4>
+              <div style="padding:15px;background:#fecaca;border-left:4px solid #ef4444;border-radius:6px;margin-bottom:10px;">
+                <strong>8 Active Backlogs</strong><br>
+                <small>DSA Retake: 5, DBMS: 2, OS: 1</small>
+              </div>
+              <div style="padding:15px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:6px;margin-bottom:10px;">
+                <strong>12 At Risk</strong><br>
+                <small>SGPA < 7.5 needs intervention</small>
+              </div>
+              <div style="padding:15px;background:#dcfce7;border-left:4px solid #22c55e;border-radius:6px;margin-bottom:10px;">
+                <strong>Topper</strong><br>
+                <small>Ravi Kumar - 9.4 SGPA (Perfect Attendance)</small>
+              </div>
+              <div style="padding:15px;background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;">
+                <strong>Improvement</strong><br>
+                <small>+2.3 avg improvement from Sem 6</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- PLACEMENTS SECTION -->
+      <div id="placements" class="section">
+        <div class="card">
+          <h3>💼 Placement Statistics - 2025-26 Drive</h3>
+          
+          <div class="stats-grid">
+            <div class="stat-card" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);">
+              <h4>42</h4>
+              <p>Placed</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+              <h4>52 LPA</h4>
+              <p>Highest Package</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+              <h4>14.8 LPA</h4>
+              <p>Average</p>
+            </div>
+            <div class="stat-card" style="background:linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);">
+              <h4>8.5 LPA</h4>
+              <p>Minimum</p>
+            </div>
+          </div>
+          
+          <div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:8px;">
+            <table id="placementTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Roll</th>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Package</th>
+                  <th>Join Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Vamsi Valluri</td><td>CS21B001</td><td>Microsoft</td><td>SDE-1</td><td>28 LPA</td><td>Jul 2026</td><td><span class="badge success">Confirmed</span></td></tr>
+                <tr><td>Ravi Kumar</td><td>CS21B002</td><td>Google</td><td>SDE</td><td>32 LPA</td><td>Jul 2026</td><td><span class="badge success">Confirmed</span></td></tr>
+                <tr><td>Anil Reddy</td><td>CS21B003</td><td>Amazon</td><td>SDE-1</td><td>30 LPA</td><td>Aug 2026</td><td><span class="badge success">Confirmed</span></td></tr>
+                <tr><td>Neha Singh</td><td>CS21B004</td><td>Infosys</td><td>SE</td><td>9 LPA</td><td>Jun 2026</td><td><span class="badge success">Confirmed</span></td></tr>
+                <tr><td>Sakshi Gupta</td><td>CS21B007</td><td>Goldman Sachs</td><td>SDE</td><td>35 LPA</td><td>Aug 2026</td><td><span class="badge success">Confirmed</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- COMPANIES SECTION -->
+      <div id="companies" class="section">
+        <div class="card">
+          <h3>🏢 Companies Recruitment Drives - 2025-26</h3>
+          <p class="small-text">12 active companies scheduled for interviews. Track registrations, eligibility, and drive status.</p>
+          
+          <div class="search-filter">
+            <select id="companyStatusFilter" onchange="filterCompanies()">
+              <option value="">All Companies</option>
+              <option value="Scheduled">Scheduled (5)</option>
+              <option value="Ongoing">Ongoing (3)</option>
+              <option value="Completed">Completed (4)</option>
+            </select>
+            <button onclick="addNewCompany()">+ Add Company</button>
+          </div>
+          
+          <div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:8px;">
+            <table id="companiesTable">
+              <thead>
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Drive Date</th>
+                  <th>Eligibility</th>
+                  <th>Registered</th>
+                  <th>Selected</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Google</td><td>SDE L3/L4</td><td>Feb 10, 2026</td><td>7.5 CGPA</td><td>45</td><td>8</td><td><span class="badge info">Scheduled</span></td><td><button class="btn-small btn-view">View</button></td></tr>
+                <tr><td>Microsoft</td><td>SDE-1</td><td>Feb 15, 2026</td><td>7.2 CGPA</td><td>52</td><td>9</td><td><span class="badge info">Scheduled</span></td><td><button class="btn-small btn-view">View</button></td></tr>
+                <tr><td>Amazon</td><td>SDE-1</td><td>Feb 20, 2026</td><td>6.8 CGPA</td><td>58</td><td>10</td><td><span class="badge info">Scheduled</span></td><td><button class="btn-small btn-view">View</button></td></tr>
+                <tr><td>Adobe</td><td>SDE</td><td>Jan 28, 2026</td><td>7.8 CGPA</td><td>28</td><td>5</td><td><span class="badge pending">Ongoing</span></td><td><button class="btn-small btn-view">View</button></td></tr>
+                <tr><td>Flipkart</td><td>SDE-1/2</td><td>Jan 25, 2026</td><td>7.0 CGPA</td><td>65</td><td>12</td><td><span class="badge pending">Ongoing</span></td><td><button class="btn-small btn-view">View</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- INTERVIEWS SECTION -->
+      <div id="interviews" class="section">
+        <div class="card">
+          <h3>🎤 Interview Scheduling & Results</h3>
+          <p class="small-text">Track interviews across rounds - Coding, HR, System Design. Schedule, reschedule, and record results.</p>
+          
+          <div class="search-filter">
+            <select id="roundFilter" onchange="filterInterviews()">
+              <option value="">All Rounds</option>
+              <option value="Coding">Coding Round (15)</option>
+              <option value="HR">HR Round (8)</option>
+              <option value="Design">System Design (5)</option>
+            </select>
+            <input type="date" id="interviewDate" value="2026-01-28">
+            <button onclick="scheduleInterview()">+ Schedule Interview</button>
+          </div>
+          
+          <div style="overflow-x:auto;border:1px solid #e5e7eb;border-radius:8px;">
+            <table id="interviewsTable">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Company</th>
+                  <th>Round</th>
+                  <th>Time</th>
+                  <th>Location</th>
+                  <th>Interviewer</th>
+                  <th>Status</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Vamsi Valluri</td><td>Microsoft</td><td>Coding R2</td><td>2:00 PM</td><td>Online</td><td>John Smith</td><td><span class="badge info">Scheduled</span></td><td>Pending</td></tr>
+                <tr><td>Ravi Kumar</td><td>Google</td><td>Design Round</td><td>3:30 PM</td><td>Online</td><td>Sarah Chen</td><td><span class="badge info">Scheduled</span></td><td>Pending</td></tr>
+                <tr><td>Anil Reddy</td><td>Amazon</td><td>Coding R1</td><td>10:00 AM</td><td>Online</td><td>Mike Johnson</td><td><span class="badge success">Completed</span></td><td><span class="badge success">Passed</span></td></tr>
+                <tr><td>Neha Singh</td><td>Infosys</td><td>HR Round</td><td>4:00 PM</td><td>Campus</td><td>HR Team</td><td><span class="badge success">Completed</span></td><td><span class="badge success">Selected</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SCHEDULE SECTION -->
+      <div id="schedule" class="section">
+        <div class="card">
+          <h3>📅 Weekly Class Schedule & Events</h3>
+          
+          <div class="two-columns">
+            <div>
+              <h4>Weekly Timetable - CSE 4th Year</h4>
+              <table>
+                <thead>
+                  <tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>9-11 AM</td><td>DSA Lect</td><td>AI Lab</td><td>DSA Lect</td><td>DBMS Lab</td><td>Cloud Lect</td></tr>
+                  <tr><td>11-1 PM</td><td>DBMS Lect</td><td>Cloud Lab</td><td>OS Lect</td><td>AIML Lect</td><td>Web Lab</td></tr>
+                  <tr><td>2-4 PM</td><td>Placement Talk</td><td>Project Work</td><td>Lab Session</td><td>Seminar</td><td>Coding Session</td></tr>
+                  <tr><td>4-6 PM</td><td>GD Practice</td><td>Mock Interview</td><td>Aptitude</td><td>Guest Lecture</td><td>Review</td></tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div>
+              <h4>📌 Upcoming Events</h4>
+              <div style="padding:12px;background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;margin-bottom:10px;">
+                <strong style="color:#0c4a6e;">Jan 25 - Google Drive</strong><br>
+                <small style="color:#0c4a6e;">SDE interviews - Coding Round 1</small>
+              </div>
+              <div style="padding:12px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:6px;margin-bottom:10px;">
+                <strong style="color:#92400e;">Jan 28 - Seminar</strong><br>
+                <small style="color:#92400e;">Cloud Computing trends by industry expert</small>
+              </div>
+              <div style="padding:12px;background:#dcfce7;border-left:4px solid #22c55e;border-radius:6px;margin-bottom:10px;">
+                <strong style="color:#166534;">Feb 5 - Skill Workshop</strong><br>
+                <small style="color:#166534;">System Design bootcamp (2-day)</small>
+              </div>
+              <div style="padding:12px;background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;">
+                <strong style="color:#0c4a6e;">Feb 10 - Google Drive</strong><br>
+                <small style="color:#0c4a6e;">Final round interviews</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- REPORTS SECTION -->
+      <div id="reports" class="section">
+        <div class="card">
+          <h3>📊 Analytics Reports - Data Export</h3>
+          <p class="small-text">Generate comprehensive reports on placements, attendance, performance, and company-wise analytics. Download data in multiple formats.</p>
+          
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:30px;margin-top:20px;">
+            <div style="padding:20px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:2px solid #3b82f6;border-radius:12px;text-align:center;cursor:pointer;font-weight:600;color:#0c4a6e;" onclick="generateDetailedReport('placement')">
+              <h5 style="margin:0;font-size:14px;">📊 Placement Report</h5>
+              <p style="margin:5px 0 0 0;font-size:12px;opacity:0.7;">PDF / Excel / CSV</p>
+            </div>
+            <div style="padding:20px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border:2px solid #22c55e;border-radius:12px;text-align:center;cursor:pointer;font-weight:600;color:#166534;" onclick="generateDetailedReport('attendance')">
+              <h5 style="margin:0;font-size:14px;">📋 Attendance Report</h5>
+              <p style="margin:5px 0 0 0;font-size:12px;opacity:0.7;">By Student/Subject</p>
+            </div>
+            <div style="padding:20px;background:linear-gradient(135deg,#fef3c7,#fed7aa);border:2px solid #f59e0b;border-radius:12px;text-align:center;cursor:pointer;font-weight:600;color:#92400e;" onclick="generateDetailedReport('performance')">
+              <h5 style="margin:0;font-size:14px;">📈 Performance Report</h5>
+              <p style="margin:5px 0 0 0;font-size:12px;opacity:0.7;">CGPA vs Placements</p>
+            </div>
+            <div style="padding:20px;background:linear-gradient(135deg,#fecaca,#fca5a5);border:2px solid #ef4444;border-radius:12px;text-align:center;cursor:pointer;font-weight:600;color:#7f1d1d;" onclick="generateDetailedReport('company')">
+              <h5 style="margin:0;font-size:14px;">🏢 Company Report</h5>
+              <p style="margin:5px 0 0 0;font-size:12px;opacity:0.7;">Offers & Selections</p>
+            </div>
+          </div>
+          
+          <h4>💾 Export Data</h4>
+          <table>
+            <thead>
+              <tr><th>Report</th><th>Records</th><th>Details</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Student Master CSV</td>
+                <td>245 records</td>
+                <td>Name, Email, Roll, Dept, Year, CGPA, Contact</td>
+                <td><button class="btn-small btn-download" onclick="downloadStudentCSV()">📥 Download</button></td>
+              </tr>
+              <tr>
+                <td>Placement Data Excel</td>
+                <td>42 placements</td>
+                <td>Student Name, Company, Role, Package, Status, Join Date</td>
+                <td><button class="btn-small btn-download" onclick="downloadPlacementExcel()">📥 Download</button></td>
+              </tr>
+              <tr>
+                <td>Attendance Log CSV</td>
+                <td>60 days</td>
+                <td>Daily attendance by student, Subject-wise breakdown, Trends</td>
+                <td><button class="btn-small btn-download" onclick="downloadAttendanceCSV()">📥 Download</button></td>
+              </tr>
+              <tr>
+                <td>Results Archive PDF</td>
+                <td>7 semesters</td>
+                <td>CGPA, Subject-wise marks, SGPA, Grade distribution</td>
+                <td><button class="btn-small btn-download" onclick="downloadResultsPDF()">📥 Download</button></td>
+              </tr>
+              <tr>
+                <td>Company Analytics Excel</td>
+                <td>12 companies</td>
+                <td>Registrations, Selections, Offer Rate, Average Package</td>
+                <td><button class="btn-small btn-download" onclick="downloadCompanyAnalytics()">📥 Download</button></td>
+              </tr>
+              <tr>
+                <td>Interview Records JSON</td>
+                <td>156 records</td>
+                <td>Interview date, Round, Result, Interviewer, Feedback</td>
+                <td><button class="btn-small btn-download" onclick="downloadInterviewJSON()">📥 Download</button></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Detailed Report Display -->
+          <div id="detailedReportSection" style="margin-top:30px;display:none;">
+            <div class="report-details">
+              <h5 id="reportTitle">Report Details</h5>
+              <div id="reportContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SKILLS SECTION -->
+      <div id="skills" class="section">
+        <div class="card">
+          <h3>⚡ Skills Assessment - AI Analyzed</h3>
+          <p class="small-text">Student skills proficiency tracked across technical and soft skills with AI recommendations for training.</p>
+          
+          <div style="display:grid;gap:15px;">
+            <div style="padding:15px;background:#dcfce7;border-left:4px solid #22c55e;border-radius:6px;">
+              <strong>DSA (Data Structures)</strong> - <span class="badge success">78% Strong</span><br>
+              <small>85/120 students proficient | Avg score: 82/100</small>
+              <div style="margin-top:10px;background:white;border-radius:4px;height:10px;width:100%;">
+                <div style="background:#22c55e;height:100%;width:78%;border-radius:4px;"></div>
+              </div>
+            </div>
+            <div style="padding:15px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:6px;">
+              <strong>System Design</strong> - <span class="badge warning">42% Weak</span><br>
+              <small>50/120 students weak | Avg score: 54/100</small>
+              <div style="margin-top:10px;background:white;border-radius:4px;height:10px;width:100%;">
+                <div style="background:#f59e0b;height:100%;width:42%;border-radius:4px;"></div>
+              </div>
+            </div>
+            <div style="padding:15px;background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;">
+              <strong>Communication (Soft Skills)</strong> - <span class="badge info">65% Moderate</span><br>
+              <small>78/120 students average | Avg score: 65/100</small>
+              <div style="margin-top:10px;background:white;border-radius:4px;height:10px;width:100%;">
+                <div style="background:#3b82f6;height:100%;width:65%;border-radius:4px;"></div>
+              </div>
+            </div>
+            <div style="padding:15px;background:#dcfce7;border-left:4px solid #22c55e;border-radius:6px;">
+              <strong>AIML (Emerging Tech)</strong> - <span class="badge success">82% Strong</span><br>
+              <small>98/120 students proficient | Avg score: 85/100</small>
+              <div style="margin-top:10px;background:white;border-radius:4px;height:10px;width:100%;">
+                <div style="background:#22c55e;height:100%;width:82%;border-radius:4px;"></div>
+              </div>
+            </div>
+            <div style="padding:15px;background:#fecaca;border-left:4px solid #ef4444;border-radius:6px;">
+              <strong>Database (SQL)</strong> - <span class="badge danger">55% Below Average</span><br>
+              <small>66/120 students weak | Avg score: 61/100</small>
+              <div style="margin-top:10px;background:white;border-radius:4px;height:10px;width:100%;">
+                <div style="background:#ef4444;height:100%;width:55%;border-radius:4px;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <h4 style="margin-top:25px;">📚 Training Recommendations</h4>
+          <ul style="list-style:none;padding:0;">
+            <li style="padding:10px;margin:5px 0;background:#dbeafe;border-left:4px solid #3b82f6;border-radius:4px;"><strong>System Design Workshop</strong> - Feb 5-6 (Mandatory for weak students)</li>
+            <li style="padding:10px;margin:5px 0;background:#dcfce7;border-left:4px solid #22c55e;border-radius:4px;"><strong>SQL Bootcamp</strong> - Jan 25-27 (2-hour daily sessions)</li>
+            <li style="padding:10px;margin:5px 0;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><strong>Mock Interviews</strong> - Every Tuesday & Thursday</li>
+            <li style="padding:10px;margin:5px 0;background:#fecaca;border-left:4px solid #ef4444;border-radius:4px;"><strong>🚨 Critical</strong> - 15 students need 1-on-1 mentoring</li>
+          </ul>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- MODALS -->
+  <div id="studentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Student</h3>
+        <button class="close" onclick="closeModal('studentModal')">&times;</button>
+      </div>
+      <form id="studentForm" onsubmit="saveStudent(event)">
+        <div class="form-group">
+          <label>Roll Number *</label>
+          <input type="text" id="modalRoll" placeholder="e.g., CS21B001" required>
+        </div>
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="modalName" placeholder="Full Name" required>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="modalEmail" placeholder="email@college.edu" required>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="modalPhone" placeholder="10-digit phone number">
+        </div>
+        <div class="two-columns">
+          <div class="form-group">
+            <label>Department *</label>
+            <select id="modalDept" required>
+              <option value="">Select Department</option>
+              <option value="CSE">CSE</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="MECH">MECH</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Year *</label>
+            <select id="modalYear" required>
+              <option value="">Select Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CGPA</label>
+            <input type="number" id="modalCGPA" placeholder="7.50" step="0.01" min="0" max="10">
+          </div>
+          <div class="form-group">
+            <label>Attendance %</label>
+            <input type="number" id="modalAttendance" placeholder="85" min="0" max="100">
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button type="submit" style="flex:1;padding:12px;background:#3b82f6;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">💾 Save Student</button>
+          <button type="button" onclick="closeModal('studentModal')" style="flex:1;padding:12px;background:#6b7280;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // ============== CORE FUNCTIONS ==============
+    const API_BASE = 'http://localhost:5000';
+    
+    function openSection(id, el) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (el) el.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+    
+    function showNotification(msg, type = 'success') {
+      const notif = document.getElementById('notification');
+      notif.textContent = msg;
+      notif.className = `notification ${type}`;
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.display = 'none', 4000);
+    }
+    
+    function doLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        localStorage.clear();
+        location.href = './index.html';
+      }
+    }
+    
+    // ============== PROFILE FUNCTIONS ==============
+    let selectedImageFile = null;
+    
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file && file.size <= 5242880) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('profileImg').src = e.target.result;
+          selectedImageFile = file;
+          showNotification('Image preview updated. Click "Save Photo" to upload.', 'info');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        showNotification('File too large (max 5MB)', 'error');
+      }
+    }
+    
+    function saveProfileImage() {
+      if (!selectedImageFile) {
+        showNotification('Please select an image first', 'warning');
+        return;
+      }
+      showNotification('✓ Profile image updated successfully!', 'success');
+    }
+    
+    function toggleEditProfile() {
+      const editForm = document.getElementById('editProfileSection');
+      const isShowing = editForm.style.display !== 'none';
+      editForm.style.display = isShowing ? 'none' : 'block';
+      
+      if (!isShowing) {
+        document.getElementById('editName').value = document.getElementById('displayName').textContent;
+        document.getElementById('editEmail').value = document.getElementById('displayEmail').textContent;
+        document.getElementById('editPhone').value = document.getElementById('displayPhone').textContent;
+        document.getElementById('editDesignation').value = document.getElementById('displayDesignation').textContent;
+        document.getElementById('editDept').value = document.getElementById('displayDept').textContent;
+        document.getElementById('editEmpID').value = document.getElementById('displayEmpID').textContent;
+      }
+    }
+    
+    function saveProfileChanges(event) {
+      event.preventDefault();
+      
+      const profileData = {
+        fullName: document.getElementById('editName').value.trim(),
+        email: document.getElementById('editEmail').value.trim(),
+        phone: document.getElementById('editPhone').value.trim(),
+        designation: document.getElementById('editDesignation').value.trim(),
+        department: document.getElementById('editDept').value.trim(),
+        empID: document.getElementById('editEmpID').value.trim(),
+        bio: document.getElementById('editBio').value.trim(),
+        qualifications: document.getElementById('editQualifications').value.trim(),
+        officeLocation: document.getElementById('editOfficeLocation').value.trim()
+      };
+      
+      if (!profileData.fullName || !profileData.email) {
+        showNotification('Name and Email are required', 'error');
+        return;
+      }
+      
+      // UPDATE DISPLAY IMMEDIATELY
+      document.getElementById('displayName').textContent = profileData.fullName;
+      document.getElementById('displayEmail').textContent = profileData.email;
+      document.getElementById('displayPhone').textContent = profileData.phone;
+      document.getElementById('displayDesignation').textContent = profileData.designation;
+      document.getElementById('displayDept').textContent = profileData.department;
+      document.getElementById('displayEmpID').textContent = profileData.empID;
+      
+      // UPDATE NAVBAR
+      const initials = profileData.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase();
+      document.getElementById('userAvatarNav').textContent = initials || profileData.fullName[0].toUpperCase();
+      document.getElementById('facultyNameNav').textContent = profileData.fullName;
+      document.getElementById('facultyDeptNav').textContent = profileData.department || 'Department';
+      
+      // SAVE TO LOCALSTORAGE
+      localStorage.setItem('authUser', JSON.stringify(profileData));
+      
+      toggleEditProfile();
+      showNotification('✓ Profile updated successfully!', 'success');
+    }
+    
+    // ============== FILTER & SEARCH FUNCTIONS ==============
+    function filterStudents() {
+      const search = document.getElementById('studentSearch').value.toLowerCase();
+      const dept = document.getElementById('deptFilter').value;
+      const year = document.getElementById('yearFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      
+      const rows = document.querySelectorAll('#studentTable tbody tr');
+      rows.forEach(row => {
+        const name = row.cells[1].textContent.toLowerCase();
+        const roll = row.cells[0].textContent.toLowerCase();
+        const d = row.cells[4].textContent;
+        const y = row.cells[5].textContent;
+        const s = row.cells[8].textContent;
+        
+        const match = (!search || name.includes(search) || roll.includes(search)) &&
+                      (!dept || d === dept) &&
+                      (!year || y === year) &&
+                      (!status || s.includes(status));
+        
+        row.style.display = match ? '' : 'none';
+      });
+    }
+    
+    function filterAttendance() {
+      showNotification('Attendance filtered', 'info');
+    }
+    
+    function filterCompanies() {
+      const status = document.getElementById('companyStatusFilter').value;
+      const rows = document.querySelectorAll('#companiesTable tbody tr');
+      rows.forEach(row => {
+        const s = row.cells[6].textContent;
+        row.style.display = (!status || s.includes(status)) ? '' : 'none';
+      });
+    }
+    
+    function filterInterviews() {
+      const round = document.getElementById('roundFilter').value;
+      const rows = document.querySelectorAll('#interviewsTable tbody tr');
+      rows.forEach(row => {
+        const r = row.cells[2].textContent;
+        row.style.display = (!round || r.includes(round)) ? '' : 'none';
+      });
+    }
+    
+    // ============== DOWNLOAD FUNCTIONS ==============
+    function downloadStudentCSV() {
+      const csvContent = "data:text/csv;charset=utf-8," + 
+        "Roll,Name,Email,Phone,Dept,Year,CGPA,Attendance%\n" +
+        "CS21B001,Vamsi Valluri,vamsi@college.edu,9876543210,CSE,4,8.75,88\n" +
+        "CS21B002,Ravi Kumar,ravi@college.edu,9123456789,CSE,4,8.92,94\n" +
+        "CS21B003,Anil Reddy,anil@college.edu,9234567890,CSE,4,9.12,96\n" +
+        "CS21B004,Neha Singh,neha@college.edu,9345678901,CSE,4,8.45,82";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "student_master_" + new Date().toISOString().split('T')[0] + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Student CSV downloaded!', 'success');
+    }
+    
+    function downloadPlacementExcel() {
+      const csvContent = "data:text/csv;charset=utf-8," +
+        "Student Name,Roll,Company,Role,Package (LPA),Join Date,Status\n" +
+        "Vamsi Valluri,CS21B001,Microsoft,SDE-1,28,Jul 2026,Confirmed\n" +
+        "Ravi Kumar,CS21B002,Google,SDE,32,Jul 2026,Confirmed\n" +
+        "Anil Reddy,CS21B003,Amazon,SDE-1,30,Aug 2026,Confirmed\n" +
+        "Neha Singh,CS21B004,Infosys,SE,9,Jun 2026,Confirmed";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "placement_data_" + new Date().toISOString().split('T')[0] + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Placement data downloaded!', 'success');
+    }
+    
+    function downloadAttendanceCSV() {
+      const csvContent = "data:text/csv;charset=utf-8," +
+        "Name,Roll,DSA,AIML,DBMS,WebTech,OS,Cloud,Overall%,Trend\n" +
+        "Vamsi Valluri,CS21B001,88,92,95,91,89,94,91%,Stable\n" +
+        "Ravi Kumar,CS21B002,94,96,98,97,95,96,96%,Excellent\n" +
+        "Anil Reddy,CS21B003,96,94,96,95,97,98,96%,Excellent\n" +
+        "Neha Singh,CS21B004,82,85,88,86,84,87,85%,Improving";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "attendance_log_" + new Date().toISOString().split('T')[0] + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Attendance log downloaded!', 'success');
+    }
+    
+    function downloadResultsPDF() {
+      const csvContent = "data:text/csv;charset=utf-8," +
+        "Name,Roll,DSA,AIML,DBMS,WebTech,OS,Cloud,SGPA,Sem Avg\n" +
+        "Vamsi Valluri,CS21B001,92,88,90,91,89,94,9.1,90.5\n" +
+        "Ravi Kumar,CS21B002,94,92,94,97,95,96,9.4,94.7\n" +
+        "Anil Reddy,CS21B003,96,89,92,95,97,98,9.2,94.5\n" +
+        "Neha Singh,CS21B004,88,85,87,86,84,87,8.8,86.2";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "results_archive_" + new Date().toISOString().split('T')[0] + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Results archive downloaded!', 'success');
+    }
+    
+    function downloadCompanyAnalytics() {
+      const csvContent = "data:text/csv;charset=utf-8," +
+        "Company,Role,Drive Date,Registrations,Selected,Offer Rate %,Average Package LPA\n" +
+        "Google,SDE L3/L4,Feb 10 2026,45,8,17.8,35.5\n" +
+        "Microsoft,SDE-1,Feb 15 2026,52,9,17.3,28.0\n" +
+        "Amazon,SDE-1,Feb 20 2026,58,10,17.2,30.0\n" +
+        "Adobe,SDE,Jan 28 2026,28,5,17.9,26.0";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "company_analytics_" + new Date().toISOString().split('T')[0] + ".csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Company analytics downloaded!', 'success');
+    }
+    
+    function downloadInterviewJSON() {
+      const data = [
+        {id: 1, student: "Vamsi Valluri", company: "Microsoft", round: "Coding R2", time: "2:00 PM", status: "Scheduled", result: "Pending"},
+        {id: 2, student: "Ravi Kumar", company: "Google", round: "Design", time: "3:30 PM", status: "Scheduled", result: "Pending"},
+        {id: 3, student: "Anil Reddy", company: "Amazon", round: "Coding R1", time: "10:00 AM", status: "Completed", result: "Passed"},
+        {id: 4, student: "Neha Singh", company: "Infosys", round: "HR", time: "4:00 PM", status: "Completed", result: "Selected"}
+      ];
+      
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const link = document.createElement("a");
+      link.setAttribute("href", dataStr);
+      link.setAttribute("download", "interview_records_" + new Date().toISOString().split('T')[0] + ".json");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showNotification('✓ Interview records downloaded!', 'success');
+    }
+    
+    function generateDetailedReport(type) {
+      const section = document.getElementById('detailedReportSection');
+      const content = document.getElementById('reportContent');
+      const title = document.getElementById('reportTitle');
+      
+      let reportHTML = '';
+      
+      if (type === 'placement') {
+        title.textContent = '📊 Placement Report Details';
+        reportHTML = `
+          <ul>
+            <li><strong>Total Registrations:</strong> 245 students</li>
+            <li><strong>Total Placed:</strong> 42 students (17.1%)</li>
+            <li><strong>Highest Package:</strong> 52 LPA (Google)</li>
+            <li><strong>Average Package:</strong> 14.8 LPA</li>
+            <li><strong>Minimum Package:</strong> 8.5 LPA</li>
+            <li><strong>Top Companies:</strong> Google, Microsoft, Amazon, Goldman Sachs</li>
+            <li><strong>Median Package:</strong> 14.2 LPA</li>
+            <li><strong>Companies Visited:</strong> 12</li>
+          </ul>
+        `;
+      } else if (type === 'attendance') {
+        title.textContent = '📋 Attendance Report Details';
+        reportHTML = `
+          <ul>
+            <li><strong>Average Attendance:</strong> 86.2%</li>
+            <li><strong>Total Days Tracked:</strong> 60 days</li>
+            <li><strong>Students with >90% Attendance:</strong> 120</li>
+            <li><strong>Students with 75-90% Attendance:</strong> 85</li>
+            <li><strong>Students with <75% Attendance:</strong> 40</li>
+            <li><strong>Subject with Highest Attendance:</strong> DBMS (92%)</li>
+            <li><strong>Subject with Lowest Attendance:</strong> WebTech (78%)</li>
+            <li><strong>Most Absent:</strong> Rohit Sharma (68%)</li>
+          </ul>
+        `;
+      } else if (type === 'performance') {
+        title.textContent = '📈 Performance Report Details';
+        reportHTML = `
+          <ul>
+            <li><strong>Average CGPA:</strong> 8.14</li>
+            <li><strong>Students with CGPA > 9.0:</strong> 45 (18.4%)</li>
+            <li><strong>Students with CGPA 8.0-9.0:</strong> 125 (51%)</li>
+            <li><strong>Students with CGPA 7.0-8.0:</strong> 65 (26.5%)</li>
+            <li><strong>Students with CGPA < 7.0:</strong> 10 (4.1%)</li>
+            <li><strong>Topper:</strong> Ravi Kumar (9.4 CGPA)</li>
+            <li><strong>Placement Rate (CGPA > 8.0):</strong> 28 out of 170 (16.5%)</li>
+            <li><strong>Correlation with Placements:</strong> Strong positive</li>
+          </ul>
+        `;
+      } else if (type === 'company') {
+        title.textContent = '🏢 Company Report Details';
+        reportHTML = `
+          <ul>
+            <li><strong>Total Companies Visited:</strong> 12</li>
+            <li><strong>Total Offers:</strong> 42</li>
+            <li><strong>Overall Selection Rate:</strong> 17.1%</li>
+            <li><strong>Companies with Highest Selection:</strong> Goldman Sachs (35%)</li>
+            <li><strong>Companies with Lowest Selection:</strong> Flipkart (12%)</li>
+            <li><strong>Average Package Offered:</strong> 14.8 LPA</li>
+            <li><strong>Most Popular Role:</strong> SDE-1 (18 offers)</li>
+            <li><strong>Career Fair Success Rate:</strong> 87% attendance</li>
+          </ul>
+        `;
+      }
+      
+      content.innerHTML = reportHTML;
+      section.style.display = 'block';
+      showNotification('✓ Report generated successfully!', 'success');
+    }
+    
+    // ============== MODAL & FORM FUNCTIONS ==============
+    function openAddStudentModal() {
+      document.getElementById('modalTitle').textContent = 'Add New Student';
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentModal').style.display = 'block';
+    }
+    
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+    
+    function saveStudent(event) {
+      event.preventDefault();
+      showNotification('✓ Student added successfully!', 'success');
+      closeModal('studentModal');
+    }
+    
+    // ============== ACTION FUNCTIONS ==============
+    function exportStudents() {
+      showNotification('📥 Exporting 245 students...', 'info');
+      setTimeout(() => downloadStudentCSV(), 500);
+    }
+    
+    function markBulkAttendance() {
+      showNotification('Opening attendance marking interface...', 'info');
+    }
+    
+    function generateAttendanceReport() {
+      showNotification('📊 Generating attendance report...', 'info');
+    }
+    
+    function uploadResults() {
+      showNotification('Opening results upload interface...', 'info');
+    }
+    
+    function loadSemesterResults() {
+      showNotification('Loading semester results...', 'info');
+    }
+    
+    function addNewCompany() {
+      showNotification('Opening company registration form...', 'info');
+    }
+    
+    function scheduleInterview() {
+      showNotification('Opening interview scheduler...', 'info');
+    }
+    
+    // ============== INITIALIZATION ==============
+    window.addEventListener('DOMContentLoaded', function() {
+      const user = JSON.parse(localStorage.getItem('authUser') || '{}');
+      
+      if (user.fullName) {
+        const initials = user.fullName.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase();
+        document.getElementById('userAvatarNav').textContent = initials || user.fullName[0].toUpperCase();
+        document.getElementById('facultyNameNav').textContent = user.fullName;
+        document.getElementById('displayName').textContent = user.fullName;
+      }
+      
+      if (user.email) document.getElementById('displayEmail').textContent = user.email;
+      if (user.phone) document.getElementById('displayPhone').textContent = user.phone;
+      if (user.department) {
+        document.getElementById('displayDept').textContent = user.department;
+        document.getElementById('facultyDeptNav').textContent = user.department;
+      }
+      if (user.designation) document.getElementById('displayDesignation').textContent = user.designation;
+      if (user.empID) document.getElementById('displayEmpID').textContent = user.empID;
+      
+      const now = new Date();
+      const timeStr = now.toLocaleString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      document.getElementById('lastLogin').textContent = `Last login: ${timeStr}`;
+    });
+    
+    // Close modals on outside click
+    window.onclick = function(event) {
+      const modal = document.getElementById('studentModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+  </script>
+</body>
+</html>

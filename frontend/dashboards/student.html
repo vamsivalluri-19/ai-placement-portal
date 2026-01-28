@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Dashboard | AI Placement Portal</title>
+<script>
+  if (
+    localStorage.getItem("isLoggedIn") !== "true" ||
+    localStorage.getItem("userRole") !== "student"
+  ) {
+    window.location.href = "/";
+  }
+</script>
+
+<style>
+/* ===== RESET ===== */
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family: "Segoe UI", Arial;
+  background: #f1f5f9;
+  display: flex;
+  height: 100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg,#020617,#111827);
+  color: white;
+  padding: 20px 15px;
+  overflow-y: auto;
+  height: 100vh;
+}
+.sidebar h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+.sidebar a {
+  display: block;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  color: #cbd5f5;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+.sidebar a:hover,
+.sidebar a.active {
+  background: #3b82f6;
+  color: #fff;
+  transform: translateX(4px);
+}
+
+/* ===== MAIN ===== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== NAV ===== */
+nav {
+  background: #020617;
+  color: white;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+nav h3 {
+  margin: 0;
+  font-size: 18px;
+}
+nav button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.logout { background:#ef4444; color:white; }
+.logout:hover { background:#dc2626; }
+
+/* ===== CONTENT ===== */
+.content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+.section { display:none; }
+.section.active { display:block; }
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+}
+.card:hover {
+  box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+}
+.card h3 {
+  margin-bottom: 12px;
+  color: #1e293b;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card h4 {
+  margin-top: 16px;
+  margin-bottom: 12px;
+  color: #374151;
+  font-size: 15px;
+}
+
+/* ===== TABLE ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 12px;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+th { background: #f3f4f6; font-weight: 600; color: #374151; }
+tbody tr:hover { background: #f9fafb; }
+
+/* ===== BADGES ===== */
+.badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: white;
+  font-weight: 600;
+  display: inline-block;
+}
+.success { background:#22c55e; }
+.warning { background:#f59e0b; }
+.danger { background:#ef4444; }
+.info { background:#3b82f6; }
+.purple { background: #8b5cf6; }
+.pink { background: #ec4899; }
+
+/* ===== PROGRESS ===== */
+.progress {
+  background:#e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 6px 0;
+  height: 20px;
+}
+.progress span {
+  display:block;
+  background:#22c55e;
+  padding:2px 6px;
+  color:white;
+  font-size:11px;
+  text-align:center;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== PROFILE SECTION ===== */
+.profile-container { 
+  display: grid; 
+  grid-template-columns: 280px 1fr; 
+  gap: 20px; 
+}
+.profile-image-section { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  padding: 20px; 
+  background: #f8fafc; 
+  border-radius: 12px; 
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+.profile-img { 
+  width: 180px; 
+  height: 180px; 
+  border-radius: 50%; 
+  object-fit: cover; 
+  border: 5px solid #3b82f6; 
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
+  margin-bottom: 12px;
+}
+.upload-btn-wrapper { 
+  position: relative; 
+  overflow: hidden; 
+  display: inline-block; 
+  width: 100%;
+}
+.upload-btn-wrapper input[type=file] { 
+  position: absolute; 
+  left: -9999px; 
+}
+.upload-label { 
+  display: block; 
+  padding: 10px 16px; 
+  background: #3b82f6; 
+  color: white; 
+  border-radius: 8px; 
+  text-align: center; 
+  cursor: pointer; 
+  font-weight: 600; 
+  transition: all 0.3s; 
+  font-size: 13px; 
+  margin-bottom: 8px;
+}
+.upload-label:hover { 
+  background: #2563eb; 
+  transform: translateY(-2px);
+}
+.profile-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+  width: 100%;
+}
+.stat-item {
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border-left: 3px solid #3b82f6;
+  text-align: center;
+}
+.stat-item strong {
+  display: block;
+  font-size: 18px;
+  color: #1e293b;
+}
+.stat-item small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.profile-info-section { 
+  background: white; 
+  border-radius: 12px; 
+  border: 1px solid #e2e8f0; 
+  padding: 20px;
+}
+.profile-info-section h4 { 
+  color: #1e293b; 
+  font-size: 15px; 
+  margin-bottom: 12px; 
+  font-weight: 700; 
+  border-bottom: 2px solid #3b82f6; 
+  padding-bottom: 8px;
+}
+.info-row { 
+  display: flex; 
+  justify-content: space-between; 
+  padding: 10px 0; 
+  border-bottom: 1px solid #e2e8f0;
+  align-items: center;
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { 
+  font-weight: 600; 
+  color: #374151; 
+  min-width: 130px;
+  font-size: 13px;
+}
+.info-value { 
+  color: #6b7280; 
+  word-break: break-word;
+  text-align: right;
+  font-size: 13px;
+}
+
+/* ===== GENERIC LISTS ===== */
+.card ul {
+  margin-left: 18px;
+}
+.card li {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* ===== CALENDAR MONTHLY ===== */
+.calendar-monthly {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+}
+.day-name {
+  font-weight: 600;
+  text-align: center;
+  color: #64748b;
+  padding: 8px;
+}
+.day {
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s;
+}
+
+.present { background: #22c55e; }
+.absent { background: #ef4444; }
+.partial { background: #f59e0b; }
+
+.day:hover {
+  transform: scale(1.05);
+}
+
+.day-details {
+  margin-top: 18px;
+  display: none;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  border-left: 4px solid #3b82f6;
+}
+.day-details ul {
+  list-style: none;
+  padding: 0;
+}
+.day-details li {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+.summary-chip {
+  background:#e0e7ff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #3730a3;
+  font-weight: 500;
+}
+
+/* ===== WEEKLY CLASS CALENDAR ===== */
+.calendar-weekly {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  overflow-x: auto;
+}
+.calendar-header,
+.calendar-row {
+  display: grid;
+  grid-template-columns: 80px repeat(6, 1fr);
+  gap: 4px;
+}
+.calendar-header div {
+  font-weight: 600;
+  background: #e5e7eb;
+  padding: 8px;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.calendar-row div {
+  padding: 10px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.time {
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #374151;
+}
+
+.class {
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dsa { background: #2563eb; }
+.ai { background: #16a34a; }
+.dbms { background: #f59e0b; }
+.web { background: #9333ea; }
+.free {
+  background: #e5e7eb;
+  color: #374151;
+  cursor: default;
+}
+
+.today {
+  outline: 3px solid #22c55e;
+  outline-offset: -3px;
+}
+
+.current-class {
+  position: relative;
+  box-shadow: 0 0 0 3px #22c55e inset;
+  animation: pulse 1.2s infinite;
+}
+.current-class::after {
+  content: "LIVE";
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 9px;
+  background: #ef4444;
+  color: white;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,.7); }
+  70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+.present-mark {
+  background: #22c55e !important;
+}
+.absent-mark {
+  background: #ef4444 !important;
+}
+
+/* ===== LAYOUT ===== */
+.small-text {
+  font-size: 13px;
+  color:#64748b;
+  margin: 8px 0;
+}
+.two-columns {
+  display:grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap:16px;
+}
+.three-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.metric-box {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border-left: 4px solid #3b82f6;
+  margin-bottom: 12px;
+}
+.metric-box strong {
+  color: #1e293b;
+  font-size: 16px;
+}
+.metric-box p {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 13px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+}
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.button {
+  padding: 10px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s;
+  margin-right: 10px;
+}
+.button:hover { background: #2563eb; }
+.button.success { background: #22c55e; }
+.button.success:hover { background: #16a34a; }
+.button.cancel { background: #6b7280; }
+.button.cancel:hover { background: #4b5563; }
+
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 25px;
+  border-radius: 14px;
+  width: 90%;
+  max-width: 550px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-header h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 18px;
+}
+.close {
+  color: #9ca3af;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.close:hover { color: #1e293b; }
+
+@media(max-width:900px){
+  .two-columns, .three-columns {
+    grid-template-columns: 1fr;
+  }
+  .profile-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media(max-width:640px){
+  .sidebar {
+    width: 200px;
+    padding: 15px 10px;
+  }
+  .card {
+    padding: 15px;
+  }
+  nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>📂 Menu</h2>
+  <div id="welcomeBox"></div>
+
+  <a class="active" onclick="openSection('dashboard',this)">📊 Dashboard</a>
+  <a onclick="openSection('profile',this)">👤 Profile</a>
+  <a onclick="openSection('notifications',this)">🔔 Notifications</a>
+  <a onclick="openSection('academics',this)">📘 Academics</a>
+  <a onclick="openSection('attendance',this)">📊 Attendance</a>
+  <a onclick="openSection('skills',this)">💡 Skills</a>
+  <a onclick="openSection('resume',this)">📄 Resume</a>
+  <a onclick="openSection('classes',this)">🏫 Classes</a>
+  <a onclick="openSection('interviews',this)">🎥 Interviews</a>
+  <a onclick="openSection('applications',this)">📝 Applications</a>
+  <a onclick="openSection('companies',this)">🏢 Companies</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<nav>
+  <h3>🎓 Student Dashboard</h3>
+  <div>
+    <span>👤 <span id="navStudentName">Vamsi Valluri</span> | CSE | Year 3</span>
+    <button class="logout" onclick="logout()">🚪 Logout</button>
+  </div>
+</nav>
+
+<div class="content">
+
+<!-- 📊 DASHBOARD OVERVIEW -->
+<div id="dashboard" class="section active">
+  <div class="card">
+    <h3>📊 Dashboard Overview</h3>
+    <div class="three-columns">
+      <div class="metric-box">
+        <strong>8.55</strong>
+        <p>Current CGPA</p>
+      </div>
+      <div class="metric-box">
+        <strong>89/100</strong>
+        <p>Average Attendance</p>
+      </div>
+      <div class="metric-box">
+        <strong>Tier 1</strong>
+        <p>Placement Tier</p>
+      </div>
+    </div>
+
+    <div class="three-columns">
+      <div class="metric-box">
+        <strong>82</strong>
+        <p>Resume Score</p>
+      </div>
+      <div class="metric-box">
+        <strong>4</strong>
+        <p>Applications</p>
+      </div>
+      <div class="metric-box">
+        <strong>₹30 LPA</strong>
+        <p>Avg Target Package</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Quick Stats</h3>
+    <table>
+      <tr><th>Metric</th><th>Current</th><th>Status</th></tr>
+      <tr><td>Placement Eligible</td><td>YES</td><td><span class="badge success">✓</span></td></tr>
+      <tr><td>Backlogs</td><td>None</td><td><span class="badge success">✓</span></td></tr>
+      <tr><td>Interview Calls</td><td>3 (Google, Amazon, Infosys)</td><td><span class="badge info">Active</span></td></tr>
+      <tr><td>Offers Received</td><td>1 (Infosys)</td><td><span class="badge success">✓</span></td></tr>
+      <tr><td>Profile Strength</td><td>86%</td><td><span class="badge warning">Good</span></td></tr>
+      <tr><td>Skill Match</td><td>91% with Target</td><td><span class="badge success">✓</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 👤 PROFILE SECTION -->
+<div id="profile" class="section">
+  <div class="card">
+    <h3>👤 My Profile</h3>
+    <div class="profile-container">
+      <!-- LEFT: Profile Image -->
+      <div class="profile-image-section">
+        <img id="profileImg" src="https://via.placeholder.com/180?text=Vamsi" alt="Profile" class="profile-img">
+        
+        <div class="upload-btn-wrapper">
+          <label for="imgUpload" class="upload-label">📸 Upload Photo</label>
+          <input type="file" id="imgUpload" accept="image/*" onchange="previewImage(event)">
+        </div>
+        
+        <button class="button success" onclick="saveProfileImage()" style="width:100%; margin-top:8px;">✓ Save</button>
+
+        <div class="profile-stats">
+          <div class="stat-item">
+            <strong>3.5</strong>
+            <small>Years Exp</small>
+          </div>
+          <div class="stat-item">
+            <strong>6</strong>
+            <small>Projects</small>
+          </div>
+          <div class="stat-item">
+            <strong>1.2K</strong>
+            <small>GitHub Stars</small>
+          </div>
+          <div class="stat-item">
+            <strong>A</strong>
+            <small>Rating</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Profile Details -->
+      <div>
+        <div class="profile-info-section">
+          <h4>📋 Personal Information</h4>
+          <div class="info-row">
+            <span class="info-label">Full Name:</span>
+            <span class="info-value" id="displayName">Vamsi Valluri</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value" id="displayEmail">vamsi@college.edu</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone:</span>
+            <span class="info-value" id="displayPhone">+91-9876543210</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Roll No:</span>
+            <span class="info-value" id="displayRoll">CSE001</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Department:</span>
+            <span class="info-value" id="displayDept">CSE</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Year:</span>
+            <span class="info-value" id="displayYear">3rd Year</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">College:</span>
+            <span class="info-value" id="displayCollege">MIT Pune</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Location:</span>
+            <span class="info-value" id="displayLocation">Pune, Maharashtra</span>
+          </div>
+        </div>
+
+        <div class="profile-info-section" style="margin-top:16px;">
+          <h4>🎯 Academic Info</h4>
+          <div class="info-row">
+            <span class="info-label">CGPA:</span>
+            <span class="info-value" id="displayCGPA" style="color:#22c55e; font-weight:600;">8.55</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Backlogs:</span>
+            <span class="info-value" id="displayBacklogs" style="color:#22c55e; font-weight:600;">None</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Attendance:</span>
+            <span class="info-value" id="displayAttendance" style="color:#22c55e; font-weight:600;">89%</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Class Rank:</span>
+            <span class="info-value" id="displayRank">Top 10%</span>
+          </div>
+        </div>
+
+        <button class="button" onclick="toggleEditProfile()" style="width:100%; margin-top:16px;">✏️ Edit Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Form -->
+  <div class="card" id="editProfileSection" style="display:none;">
+    <h3>✏️ Edit Profile</h3>
+    <form id="profileUpdateForm" onsubmit="saveProfileChanges(event)">
+      <div class="two-columns">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="editEmail" required>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" id="editPhone" placeholder="+91-XXXXXXXXXX">
+        </div>
+        <div class="form-group">
+          <label>Roll Number</label>
+          <input type="text" id="editRoll">
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <input type="text" id="editDept">
+        </div>
+        <div class="form-group">
+          <label>Year</label>
+          <select id="editYear">
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option>4th Year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>College/Institution</label>
+        <input type="text" id="editCollege">
+      </div>
+
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="editLocation">
+      </div>
+
+      <div class="form-group">
+        <label>Professional Bio</label>
+        <textarea id="editBio" placeholder="Share your professional background..."></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button type="submit" class="button success" style="flex:1;">💾 Save Changes</button>
+        <button type="button" class="button cancel" onclick="toggleEditProfile()" style="flex:1;">✕ Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 🔔 NOTIFICATIONS -->
+<div id="notifications" class="section">
+  <div class="card">
+    <h3>🔔 Notifications & Alerts</h3>
+    <p class="small-text">All recent placement, academic and interview activity for your profile.</p>
+    <ul>
+      <li>📢 Google interview scheduled – 18 Sep, 10:30 AM, Online (Round 1: DSA).</li>
+      <li>📄 Resume analyzed (Score 82) – Suggestions added to Resume section.</li>
+      <li>🎉 Infosys offer released – Accept before 30 Sep.</li>
+      <li>📘 Semester 4 results published – SGPA 8.7, no backlogs.</li>
+      <li>⚠ Attendance below 85% in AI and DBMS – Improve to stay eligible.</li>
+      <li>📅 Mock interview tomorrow – Amazon SDE-1 at 7:00 PM (Mentor: Ravi Kumar).</li>
+      <li>🧠 Skill gap detected: System Design – New learning path assigned.</li>
+      <li>🏢 Microsoft drive announced – Registration closes in 5 days.</li>
+      <li>📄 Resume shortlisted by Amazon – Coding round scheduled next week.</li>
+      <li>🎯 Eligibility recalculated – Eligible for Tier-1 and Tier-2 drives.</li>
+      <li>📚 New DSA resource added – "150 Must-Do Coding Interview Questions".</li>
+      <li>📩 HR message received – Infosys: Offer document uploaded to portal.</li>
+      <li>🎥 Interview room ready – Link will be active 10 mins before start.</li>
+      <li>📊 Placement stats updated – 78% class placed, highest 40 LPA.</li>
+      <li>📝 New application submitted – Adobe MTS role.</li>
+      <li>⏰ Reminder – Finish "System Design Basics" module by 25 Sep.</li>
+      <li>📌 Profile strength – 86%, add 1–2 more projects to reach 90%.</li>
+      <li>🧪 Coding contest – College DSA challenge on Sunday, 6–9 PM.</li>
+      <li>🔑 Password last changed 40 days ago – Consider updating.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 📘 ACADEMICS -->
+<div id="academics" class="section">
+  <div class="card">
+    <h3>📘 Academic Performance</h3>
+    <div class="two-columns">
+      <div>
+        <div class="metric-box">
+          <strong>CGPA: 8.55</strong>
+          <p>Till Semester 4</p>
+        </div>
+        <div class="metric-box">
+          <strong>132 / 160</strong>
+          <p>Credits Completed</p>
+        </div>
+        <div class="metric-box">
+          <strong>Backlogs: 0</strong>
+          <p>None Active</p>
+        </div>
+        <div class="metric-box">
+          <strong>Top 10%</strong>
+          <p>Class Rank (120 students)</p>
+        </div>
+        <div class="summary-row">
+          <span class="summary-chip">✓ Core CPI ≥ 8.0</span>
+          <span class="summary-chip">✓ No backlogs</span>
+          <span class="summary-chip">✓ Eligible</span>
+        </div>
+      </div>
+      <div>
+        <h4>📊 Current Semester Marks</h4>
+        <table>
+          <tr><th>Subject</th><th>Internal</th><th>External</th><th>Total</th></tr>
+          <tr><td>Data Structures</td><td>24/30</td><td>56/70</td><td>80/100</td></tr>
+          <tr><td>DBMS</td><td>26/30</td><td>58/70</td><td>84/100</td></tr>
+          <tr><td>AI</td><td>22/30</td><td>54/70</td><td>76/100</td></tr>
+          <tr><td>Web Tech</td><td>25/30</td><td>55/70</td><td>80/100</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 Semester-wise Performance</h3>
+    <table>
+      <tr><th>Semester</th><th>SGPA</th><th>Status</th><th>Remarks</th></tr>
+      <tr><td>Sem 1</td><td>8.2</td><td><span class="badge success">Pass</span></td><td>Good start</td></tr>
+      <tr><td>Sem 2</td><td>8.4</td><td><span class="badge success">Pass</span></td><td>Improved</td></tr>
+      <tr><td>Sem 3</td><td>8.6</td><td><span class="badge success">Pass</span></td><td>Excellent</td></tr>
+      <tr><td>Sem 4</td><td>8.7</td><td><span class="badge success">Pass</span></td><td>Outstanding</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>🎓 Subject-wise Performance</h3>
+    <table>
+      <tr><th>Subject</th><th>Avg Score</th><th>Progress</th></tr>
+      <tr><td>Data Structures</td><td>82/100</td><td><div class="progress"><span style="width:82%;">82%</span></div></td></tr>
+      <tr><td>DBMS</td><td>85/100</td><td><div class="progress"><span style="width:85%;">85%</span></div></td></tr>
+      <tr><td>AI</td><td>79/100</td><td><div class="progress"><span style="width:79%; background:#f59e0b;">79%</span></div></td></tr>
+      <tr><td>Web Tech</td><td>81/100</td><td><div class="progress"><span style="width:81%;">81%</span></div></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 📊 ATTENDANCE -->
+<div id="attendance" class="section">
+  <div class="card">
+    <h3>📊 Attendance Overview</h3>
+    <div class="two-columns">
+      <div>
+        <div class="metric-box">
+          <strong>83%</strong>
+          <p>Overall Attendance This Month</p>
+        </div>
+        <div class="summary-row">
+          <span class="summary-chip">Present: <b id="presentCount">0</b></span>
+          <span class="summary-chip">Absent: <b id="absentCount">0</b></span>
+          <span class="summary-chip">Partial: <b id="partialCount">0</b></span>
+        </div>
+        <h4 style="margin-top:16px;">Subject-wise Attendance</h4>
+        <p>DSA</p>
+        <div class="progress"><span style="width:90%;">90%</span></div>
+        <p>AI</p>
+        <div class="progress"><span style="width:78%; background:#f59e0b;">78%</span></div>
+        <p>DBMS</p>
+        <div class="progress"><span style="width:80%;">80%</span></div>
+        <p>Web Tech</p>
+        <div class="progress"><span style="width:88%;">88%</span></div>
+      </div>
+
+      <div>
+        <p><b>📅 Monthly Calendar</b></p>
+        <select id="monthSelect" onchange="renderCalendar()" style="margin-bottom:12px; padding:8px; border-radius:6px; border:1px solid #d1d5db;">
+          <option value="0">January</option>
+          <option value="1">February</option>
+          <option value="2">March</option>
+          <option value="3">April</option>
+          <option value="4">May</option>
+          <option value="5">June</option>
+          <option value="6">July</option>
+          <option value="7">August</option>
+          <option value="8">September</option>
+          <option value="9">October</option>
+          <option value="10">November</option>
+          <option value="11">December</option>
+        </select>
+
+        <div class="calendar-monthly" id="monthCalendar">
+          <div class="day-name">Sun</div>
+          <div class="day-name">Mon</div>
+          <div class="day-name">Tue</div>
+          <div class="day-name">Wed</div>
+          <div class="day-name">Thu</div>
+          <div class="day-name">Fri</div>
+          <div class="day-name">Sat</div>
+        </div>
+
+        <div id="dayDetails" class="day-details">
+          <h4>📚 Period-wise Attendance</h4>
+          <p class="small-text" id="daySummary"></p>
+          <ul id="periodList"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 💡 SKILLS -->
+<div id="skills" class="section">
+  <div class="card">
+    <h3>💡 Skills & Learning Path</h3>
+    <div class="two-columns">
+      <div>
+        <h4>Technical Skills</h4>
+        <ul>
+          <li>Java – Advanced (Projects + Competitive coding).</li>
+          <li>Python – Intermediate (ML, scripting, automation).</li>
+          <li>DSA – Strong (Arrays, Trees, Graphs, DP).</li>
+          <li>SQL – Advanced (Joins, indexing, query optimisation).</li>
+          <li>React – Beginner (SPA, hooks, basic state management).</li>
+          <li>Git & GitHub – Daily usage, branching, PRs.</li>
+          <li>REST APIs – Build & consume JSON APIs.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>AI Suggested Roadmap</h4>
+        <ul>
+          <li>Finish System Design basics (Low-level + High-level) in 3 weeks.</li>
+          <li>Build 1 full-stack MERN project with authentication and deployment.</li>
+          <li>Practice 30 medium DSA problems on LeetCode in the next month.</li>
+          <li>Add 1 cloud-related mini project (AWS / GCP / Azure).</li>
+          <li>Prepare 2–3 STAR stories for HR and behavioural rounds.</li>
+        </ul>
+        <p class="small-text">These action items are generated from your skill gap analysis and target companies.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 📄 RESUME -->
+<div id="resume" class="section">
+  <div class="card">
+    <h3>📄 Resume & AI Analysis</h3>
+    <div class="two-columns">
+      <div>
+        <div class="metric-box">
+          <strong>82 / 100</strong>
+          <p>Resume Score</p>
+        </div>
+        <div class="metric-box">
+          <strong>91%</strong>
+          <p>ATS Match (SDE Role)</p>
+        </div>
+        <div class="metric-box">
+          <strong><span class="badge success">Approved</span></strong>
+          <p>Current Status</p>
+        </div>
+        <p class="small-text" style="margin-top:12px;">Your resume is currently being used for Google, Amazon, Microsoft, and Adobe drives.</p>
+      </div>
+      <div>
+        <h4>Recommended Changes</h4>
+        <ul>
+          <li>Add quantified impact in projects (e.g., reduced latency by 30%).</li>
+          <li>Include 1–2 bullet points on cloud services used (e.g., S3, EC2).</li>
+          <li>Create a short "Key Skills" section aligned with SDE roles.</li>
+          <li>Mention GitHub links for all major projects.</li>
+          <li>Add "Position of Responsibility" or leadership experience, if any.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🏫 CLASSES -->
+<div id="classes" class="section">
+  <div class="card">
+    <h3>🏫 Weekly Class Schedule</h3>
+    <p class="small-text">Today's column is highlighted in green and current live class shows a LIVE badge.</p>
+
+    <div class="calendar-weekly">
+      <div class="calendar-header">
+        <div>Time</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+      </div>
+
+      <div class="calendar-row">
+        <div class="time">9:00</div>
+        <div class="class dsa">DSA</div>
+        <div class="class ai">AI</div>
+        <div class="class dsa">DSA</div>
+        <div class="class dbms">DBMS</div>
+        <div class="class web">Web Tech</div>
+        <div class="class free">—</div>
+      </div>
+
+      <div class="calendar-row">
+        <div class="time">11:00</div>
+        <div class="class ai">AI</div>
+        <div class="class web">Web Tech</div>
+        <div class="class ai">AI</div>
+        <div class="class free">—</div>
+        <div class="class dsa">DSA</div>
+        <div class="class free">—</div>
+      </div>
+
+      <div class="calendar-row">
+        <div class="time">2:00</div>
+        <div class="class dbms">DBMS</div>
+        <div class="class dbms">DBMS</div>
+        <div class="class free">—</div>
+        <div class="class ai">AI</div>
+        <div class="class dbms">DBMS</div>
+        <div class="class free">—</div>
+      </div>
+
+      <div class="calendar-row">
+        <div class="time">4:00</div>
+        <div class="class web">Web Tech</div>
+        <div class="class free">—</div>
+        <div class="class web">Web Tech</div>
+        <div class="class free">—</div>
+        <div class="class ai">AI</div>
+        <div class="class free">—</div>
+      </div>
+    </div>
+
+    <p class="small-text" style="margin-top:10px;">Click on a class cell to mark self-attendance for your own tracking (green = present, red = absent, blank = unmarked).</p>
+  </div>
+</div>
+
+<!-- 🎥 INTERVIEWS -->
+<div id="interviews" class="section">
+  <div class="card">
+    <h3>🎥 Upcoming & Past Interviews</h3>
+    <table>
+      <tr>
+        <th>Company</th>
+        <th>Round</th>
+        <th>Date & Time</th>
+        <th>Mode</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>Google</td>
+        <td>Online Coding (Round 1)</td>
+        <td>18 Sep, 10:30 AM</td>
+        <td>Google Meet</td>
+        <td><span class="badge info">Scheduled</span></td>
+      </tr>
+      <tr>
+        <td>Amazon</td>
+        <td>DSA + Behavioural</td>
+        <td>24 Sep, 3:00 PM</td>
+        <td>Zoom</td>
+        <td><span class="badge warning">Mock Ready</span></td>
+      </tr>
+      <tr>
+        <td>Infosys</td>
+        <td>HR</td>
+        <td>Completed</td>
+        <td>On-campus</td>
+        <td><span class="badge success">Cleared</span></td>
+      </tr>
+      <tr>
+        <td>Microsoft</td>
+        <td>Online Assessment</td>
+        <td>To be announced</td>
+        <td>Online</td>
+        <td><span class="badge warning">Pending</span></td>
+      </tr>
+    </table>
+    <p class="small-text" style="margin-top:6px;">Interview-specific prep links and notes will appear here once mapped to each round.</p>
+  </div>
+</div>
+
+<!-- 📝 APPLICATIONS -->
+<div id="applications" class="section">
+  <div class="card">
+    <h3>📝 Job Applications</h3>
+    <table>
+      <tr><th>Company</th><th>Role</th><th>Applied On</th><th>Status</th></tr>
+      <tr>
+        <td>Google</td>
+        <td>SDE</td>
+        <td>05 Sep</td>
+        <td><span class="badge warning">Interview</span></td>
+      </tr>
+      <tr>
+        <td>Amazon</td>
+        <td>SDE-1</td>
+        <td>02 Sep</td>
+        <td><span class="badge success">Shortlisted</span></td>
+      </tr>
+      <tr>
+        <td>Infosys</td>
+        <td>System Engineer</td>
+        <td>25 Aug</td>
+        <td><span class="badge success">Offer</span></td>
+      </tr>
+      <tr>
+        <td>Adobe</td>
+        <td>MTS</td>
+        <td>10 Sep</td>
+        <td><span class="badge info">Applied</span></td>
+      </tr>
+    </table>
+    <p class="small-text" style="margin-top:6px;">Use this page to track the status of every application and identify which company requires follow-up.</p>
+  </div>
+</div>
+
+<!-- 🏢 COMPANIES -->
+<div id="companies" class="section">
+  <div class="card">
+    <h3>🏢 Companies & Packages</h3>
+    <div class="two-columns">
+      <div>
+        <h4>Company Packages</h4>
+        <ul>
+          <li>Google – ₹30 LPA (Base + performance bonus).</li>
+          <li>Amazon – ₹28 LPA (Stock + joining bonus components).</li>
+          <li>Microsoft – ₹32 LPA.</li>
+          <li>Adobe – ₹40 LPA (Top paying for your branch).</li>
+          <li>Oracle – ₹22 LPA.</li>
+          <li>Flipkart – ₹26 LPA.</li>
+          <li>Infosys – ₹9 LPA.</li>
+          <li>TCS – ₹7 LPA.</li>
+          <li>Wipro – ₹8 LPA.</li>
+          <li>Accenture – ₹10 LPA.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Eligibility & Target Level</h4>
+        <ul>
+          <li><strong>Tier-1:</strong> Google, Microsoft, Adobe, Amazon – CGPA ≥ 8, strong DSA, contest history.</li>
+          <li><strong>Tier-2:</strong> Oracle, Flipkart, Accenture – CGPA ≥ 7.5, solid projects, basic system design.</li>
+          <li><strong>Service-based:</strong> Infosys, TCS, Wipro – CGPA ≥ 6.5, no active backlogs.</li>
+        </ul>
+        <p class="small-text">Focus preparation on DSA, system design, and project depth to maximise chances for product companies.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+let selectedImageFile = null;
+
+function openSection(id, el){
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".sidebar a").forEach(a=>a.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  el.classList.add("active");
+}
+
+function logout(){
+  if(confirm('Are you sure you want to logout?')){
+    localStorage.clear();
+    location.href="./";
+  }
+}
+
+function previewImage(event) {
+  const file = event.target.files[0];
+  if (file && file.size <= 5242880) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      document.getElementById('profileImg').src = e.target.result;
+      selectedImageFile = file;
+      alert('Image preview updated. Click "Save" to upload.');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    alert('File too large (max 5MB)');
+  }
+}
+
+function saveProfileImage() {
+  if (!selectedImageFile) {
+    alert('Please select an image first');
+    return;
+  }
+  alert('✓ Profile image updated successfully!');
+}
+
+function toggleEditProfile() {
+  const editForm = document.getElementById('editProfileSection');
+  const isShowing = editForm.style.display !== 'none';
+  editForm.style.display = isShowing ? 'none' : 'block';
+  
+  if (!isShowing) {
+    document.getElementById('editName').value = document.getElementById('displayName').textContent;
+    document.getElementById('editEmail').value = document.getElementById('displayEmail').textContent;
+    document.getElementById('editPhone').value = document.getElementById('displayPhone').textContent;
+    document.getElementById('editRoll').value = document.getElementById('displayRoll').textContent;
+    document.getElementById('editDept').value = document.getElementById('displayDept').textContent;
+    document.getElementById('editCollege').value = document.getElementById('displayCollege').textContent;
+    document.getElementById('editLocation').value = document.getElementById('displayLocation').textContent;
+  }
+}
+
+function saveProfileChanges(event) {
+  event.preventDefault();
+  
+  const profileData = {
+    fullName: document.getElementById('editName').value.trim(),
+    email: document.getElementById('editEmail').value.trim(),
+    phone: document.getElementById('editPhone').value.trim(),
+    roll: document.getElementById('editRoll').value.trim(),
+    dept: document.getElementById('editDept').value.trim(),
+    year: document.getElementById('editYear').value,
+    college: document.getElementById('editCollege').value.trim(),
+    location: document.getElementById('editLocation').value.trim(),
+    bio: document.getElementById('editBio').value.trim()
+  };
+  
+  if (!profileData.fullName || !profileData.email) {
+    alert('Name and Email are required');
+    return;
+  }
+  
+  document.getElementById('displayName').textContent = profileData.fullName;
+  document.getElementById('displayEmail').textContent = profileData.email;
+  document.getElementById('displayPhone').textContent = profileData.phone;
+  document.getElementById('displayRoll').textContent = profileData.roll;
+  document.getElementById('displayDept').textContent = profileData.dept;
+  document.getElementById('displayCollege').textContent = profileData.college;
+  document.getElementById('displayLocation').textContent = profileData.location;
+  document.getElementById('navStudentName').textContent = profileData.fullName;
+  
+  localStorage.setItem('studentProfile', JSON.stringify(profileData));
+  
+  toggleEditProfile();
+  alert('✓ Profile updated successfully!');
+}
+
+// Attendance Calendar
+const attendanceData = {
+  1: { status: "present", periods: ["DSA: P", "AI: P", "DBMS: P", "Web: P"] },
+  2: { status: "absent", periods: ["DSA: A", "AI: A", "DBMS: A", "Web: A"] },
+  3: { status: "partial", periods: ["DSA: P", "AI: A", "DBMS: P", "Web: P"] },
+  4: { status: "present", periods: ["DSA: P", "AI: P", "DBMS: P", "Web: P"] },
+  5: { status: "partial", periods: ["DSA: P", "AI: P", "DBMS: A", "Web: A"] },
+  7: { status: "present", periods: ["DSA: P", "AI: P", "DBMS: P", "Web: P"] },
+  8: { status: "present", periods: ["DSA: P", "AI: P", "DBMS: P", "Web: P"] },
+  9: { status: "absent", periods: ["DSA: A", "AI: A", "DBMS: A", "Web: A"] }
+};
+
+function renderCalendar() {
+  const calendar = document.getElementById("monthCalendar");
+  calendar.querySelectorAll(".day").forEach(d => d.remove());
+
+  const month = document.getElementById("monthSelect").value;
+  const year = new Date().getFullYear();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let present = 0, absent = 0, partial = 0;
+
+  for (let i = 0; i < firstDay; i++) {
+    const empty = document.createElement("div");
+    calendar.appendChild(empty);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const div = document.createElement("div");
+    div.classList.add("day");
+
+    const info = attendanceData[day];
+    if (info) {
+      div.classList.add(info.status);
+      if (info.status === "present") present++;
+      if (info.status === "absent") absent++;
+      if (info.status === "partial") partial++;
+
+      div.onclick = () => showDetails(day, info);
+    } else {
+      div.style.background = "#cbd5f5";
+      div.style.color = "#1e293b";
+      div.onclick = () => showDetails(day, {status:"none", periods:[]});
+    }
+
+    div.innerText = day;
+    calendar.appendChild(div);
+  }
+
+  document.getElementById("presentCount").innerText = present;
+  document.getElementById("absentCount").innerText = absent;
+  document.getElementById("partialCount").innerText = partial;
+}
+
+function showDetails(day, info) {
+  const details = document.getElementById("dayDetails");
+  details.style.display = "block";
+
+  const list = document.getElementById("periodList");
+  const summary = document.getElementById("daySummary");
+
+  list.innerHTML = "";
+
+  if (info.status === "none") {
+    summary.innerText = "No attendance data recorded for day " + day + ".";
+    return;
+  } else {
+    summary.innerText = "Day " + day + " status: " + info.status.toUpperCase() + ".";
+  }
+
+  info.periods.forEach(p => {
+    const li = document.createElement("li");
+    li.innerText = p;
+    list.appendChild(li);
+  });
+}
+
+renderCalendar();
+
+// Class Schedule
+function highlightToday() {
+  const today = new Date().getDay();
+  if (today === 0) return;
+
+  document.querySelectorAll(".calendar-row").forEach(row => {
+    const cell = row.children[today];
+    if (cell) cell.classList.add("today");
+  });
+}
+
+function getCurrentSlot() {
+  const hour = new Date().getHours();
+  if (hour >= 9 && hour < 11) return "9:00";
+  if (hour >= 11 && hour < 14) return "11:00";
+  if (hour >= 14 && hour < 16) return "2:00";
+  if (hour >= 16 && hour < 18) return "4:00";
+  return null;
+}
+
+function highlightCurrentClass() {
+  const slot = getCurrentSlot();
+  if (!slot) return;
+
+  const today = new Date().getDay();
+  if (today === 0) return;
+
+  document.querySelectorAll(".calendar-row").forEach(row => {
+    if (row.children[0].innerText === slot) {
+      const cell = row.children[today];
+      if (cell && !cell.classList.contains("free")) {
+        cell.classList.add("current-class");
+      }
+    }
+  });
+}
+
+document.querySelectorAll(".class").forEach(cls => {
+  cls.addEventListener("click", () => {
+    if (cls.classList.contains("free")) return;
+    if (cls.classList.contains("present-mark")) {
+      cls.classList.remove("present-mark");
+      cls.classList.add("absent-mark");
+    } else if (cls.classList.contains("absent-mark")) {
+      cls.classList.remove("absent-mark");
+    } else {
+      cls.classList.add("present-mark");
+    }
+  });
+});
+
+highlightToday();
+highlightCurrentClass();
+setInterval(highlightCurrentClass, 60000);
+
+// Load profile from storage
+const savedProfile = JSON.parse(localStorage.getItem('studentProfile') || '{}');
+if (savedProfile.fullName) {
+  document.getElementById('displayName').textContent = savedProfile.fullName;
+  document.getElementById('displayEmail').textContent = savedProfile.email;
+  document.getElementById('displayPhone').textContent = savedProfile.phone;
+  document.getElementById('displayRoll').textContent = savedProfile.roll;
+  document.getElementById('displayDept').textContent = savedProfile.dept;
+  document.getElementById('displayCollege').textContent = savedProfile.college;
+  document.getElementById('displayLocation').textContent = savedProfile.location;
+  document.getElementById('navStudentName').textContent = savedProfile.fullName;
+}
+</script>
+
+</body>
+</html>

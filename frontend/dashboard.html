@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Placement Portal | Dashboard</title>
+<style>
+:root {
+  --primary: #2563eb;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --bg-light: #f4f6f9;
+  --bg-dark: #1e1e1e;
+  --text-light: #333;
+  --text-dark: #f0f0f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--bg-light);
+  color: var(--text-light);
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background: #1f2937;
+  color: #fff;
+  padding: 20px;
+}
+.sidebar h2 { text-align: center; margin-bottom: 20px; }
+.sidebar ul { list-style: none; padding: 0; }
+.sidebar li { margin-bottom: 10px; }
+.sidebar a {
+  display: block; padding: 10px; color: #fff;
+  text-decoration: none; border-radius: 6px;
+}
+.sidebar a:hover { background: var(--primary); }
+
+/* Main */
+.main { flex: 1; display: flex; flex-direction: column; }
+
+/* Navbar */
+nav {
+  background: #111827; color: #fff; padding: 14px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+nav button {
+  border: none; padding: 6px 12px; border-radius: 5px;
+  cursor: pointer; margin-left: 6px;
+}
+.btn { background: var(--primary); color: #fff; }
+.logout { background: var(--danger); color: #fff; }
+
+/* Content */
+.container { padding: 20px; }
+.card {
+  display: none; background: #fff; padding: 18px;
+  border-radius: 10px; box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+.card.active { display: block; }
+h3 { margin-bottom: 10px; }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+th { background: #f1f5f9; }
+
+/* Badges */
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; color: #fff; }
+.success { background: var(--success); }
+.warning { background: var(--warning); }
+.danger { background: var(--danger); }
+
+/* Buttons */
+.apply-btn {
+  margin-top: 8px; padding: 6px 12px; background: var(--primary);
+  color: #fff; border: none; border-radius: 6px; cursor: pointer;
+}
+
+/* Dark mode */
+.dark-mode { background: var(--bg-dark); color: var(--text-dark); }
+.dark-mode .card { background: #2c2c2c; color: var(--text-dark); }
+.dark-mode .sidebar { background: #0f172a; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h2>📂 Menu</h2>
+  <ul id="menu"></ul>
+</div>
+
+<!-- Main -->
+<div class="main">
+<nav>
+  <h3>AI Placement Portal</h3>
+  <div>
+    <span id="userName">User</span>
+    <button class="btn" onclick="toggleDarkMode()">🌙</button>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Student Sections -->
+  <div class="card" id="notifications" data-role="student">
+    <h3>🔔 Notifications</h3>
+    <ul><li>Google interview scheduled – 18 Sep</li><li>Resume analyzed</li></ul>
+  </div>
+  <div class="card" id="academics" data-role="student">
+    <h3>📘 Academic Performance</h3>
+    <p>CGPA: <b>8.5</b></p>
+    <p>Status: <span class="badge success">Eligible</span></p>
+  </div>
+  <div class="card" id="skills" data-role="student">
+    <h3>💡 Skills</h3>
+    <ul><li>Java – Advanced</li><li>Python – Intermediate</li></ul>
+  </div>
+
+  <!-- HR Sections -->
+  <div class="card" id="hrJobs" data-role="hr">
+    <h3>🏢 HR Job Postings</h3>
+    <button class="apply-btn">Post New Job</button>
+    <ul><li>Software Engineer – Google</li><li>Backend Developer – Amazon</li></ul>
+  </div>
+
+  <!-- Staff Sections -->
+  <div class="card" id="staffVerify" data-role="staff">
+    <h3>📋 Staff Verification</h3>
+    <table><tr><th>Student</th><th>CGPA</th><th>Verified</th></tr>
+    <tr><td>Vamsi</td><td>8.5</td><td>✅</td></tr></table>
+  </div>
+
+  <!-- Admin Sections -->
+  <div class="card" id="adminUsers" data-role="admin">
+    <h3>👑 Admin User Management</h3>
+    <table><tr><th>User</th><th>Role</th><th>Status</th></tr>
+    <tr><td>HR01</td><td>HR</td><td>Active</td></tr></table>
+  </div>
+</div>
+</div>
+
+<script>
+function openSection(id){
+  const role = localStorage.getItem("role") || "student";
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('active');
+    if(c.dataset.role === role && c.id === id){
+      c.classList.add('active');
+    }
+  });
+}
+
+function buildMenu(){
+  const role = localStorage.getItem("role") || "student";
+  const menu = document.getElementById("menu");
+  let items = "";
+  if(role==="student"){
+    items = `
+      <li><a href="#" onclick="openSection('notifications')">🔔 Notifications</a></li>
+      <li><a href="#" onclick="openSection('academics')">📘 Academics</a></li>
+      <li><a href="#" onclick="openSection('skills')">💡 Skills</a></li>`;
+  }
+  if(role==="hr"){
+    items = `<li><a href="#" onclick="openSection('hrJobs')">🏢 Job Postings</a></li>`;
+  }
+  if(role==="staff"){
+    items = `<li><a href="#" onclick="openSection('staffVerify')">📋 Verify Students</a></li>`;
+  }
+  if(role==="admin"){
+    items = `<li><a href="#" onclick="openSection('adminUsers')">👑 User Management</a></li>`;
+  }
+  menu.innerHTML = items;
+}
+
+function toggleDarkMode(){ document.body.classList.toggle("dark-mode"); }
+function logout(){ localStorage.clear(); location.href="../index.html"; }
+
+window.onload = () => {
+  document.getElementById("userName").innerText = localStorage.getItem("name") || "User";
+  buildMenu();
+  const role = localStorage.getItem("role") || "student";
+  if(role==="student") openSection("notifications");
+  if(role==="hr") openSection("hrJobs");
+  if(role==="staff") openSection("staffVerify");
+  if(role==="admin") openSection("adminUsers");
+};
+</script>
+</body>
+</html>
