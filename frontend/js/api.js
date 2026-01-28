@@ -1,4 +1,4 @@
-const API = 'http://localhost:8000/api';
+const BASE_URL = "https://ai-placement-backend.onrender.com";
 
 export async function analyzeResumeAPI(payload) {
   const res = await fetch(`${API}/ai/analyze-resume`, {
